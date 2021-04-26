@@ -2,16 +2,32 @@ import pandas as pd
 import os
 import mysql.connector as mysql
 from mysql.connector import Error
-
+from Search.searcher import Search
 
 class DataGather:
     def __init__(self):
-        self.PATH = os.getcwd()+'\\Recommendation\\Data\\anime.csv'
+        self.PATH = os.getcwd()+'\\Data\\anime.csv'
 
     def showData(self):
         df = pd.read_csv(self.PATH)
         for col in df.columns:
             print(col)
+    def getImageUrls(self):
+        search= Search()
+        df =pd.read_csv(self.PATH)
+        animeNames = df['Name']
+        listOfImageUrls = []
+        for name in animeNames:
+            url = search.do_search(keywords = name+" anime",limits=1,download= False)
+            if(url):
+                listOfImageUrls.append(url)
+            else:
+                listOfImageUrls.append('')
+        self.addNewColumn("image_url",listOfImageUrls)
+    def addNewColumn(self,columnName,columnToAdd):
+        df =pd.read_csv(self.PATH)
+        df[columnName] = columnToAdd
+        df.to_csv(self.PATH, index=False)
 
     def sendToSQL(self):
         data = pd.read_csv(self.PATH)
@@ -46,5 +62,6 @@ class DataGather:
         except Error as e:
             print("Error while connecting to MySQL", e)
 dg = DataGather()
-dg.sendToSQL()
+dg.getImageUrls()
+#dg.sendToSQL()
  
