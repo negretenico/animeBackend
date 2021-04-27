@@ -19,7 +19,7 @@ CORS(app)
 class Anime(Resource):
     def get(self):
         cur = mysql.connection.cursor()
-        cur.execute('''SELECT * FROM anime_data''')
+        cur.execute('''SELECT * FROM anime_data ORDER BY score ASC LIMIT 5''')
         result = cur.fetchall()
         return result
 

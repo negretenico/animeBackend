@@ -6,7 +6,7 @@ from Search.searcher import Search
 
 class DataGather:
     def __init__(self):
-        self.PATH = os.getcwd()+'\\Data\\anime.csv'
+        self.PATH = os.getcwd()+'\\Recommendation\\Data'
 
     def showData(self):
         df = pd.read_csv(self.PATH)
@@ -29,10 +29,17 @@ class DataGather:
         df[columnName] = columnToAdd
         df.to_csv(self.PATH, index=False)
 
+
+    def combine(self):
+        crunchy = pd.read_csv(self.PATH+'\\crunchyroll.csv')
+        anime = pd.read_csv(self.PATH+'\\anime.csv')
+        merged = pd.merge(crunchy,anime, on = 'anime')
+        merged.to_csv(self.PATH+'\\merged.csv', index=False)
+
     def sendToSQL(self):
-        data = pd.read_csv(self.PATH)
+        data = pd.read_csv(self.PATH+'\\merged.csv')
         df = pd.DataFrame(data, columns=[
-                          'Name', 'Genders', 'Score', 'Episodes', 'Producers', 'Rating', 'Duration'])
+                          'anime', 'Genre', 'rate', 'anime_url', 'anime_img', 'episodes', 'Duration','Producers','Studios'])
         try:
             conn = mysql.connect(host='localhost', database='anime',
                         user='root', password='League123!')
@@ -45,14 +52,12 @@ class DataGather:
                 cursor.execute('DROP TABLE IF EXISTS anime_data;')
                 print('Creating table....')
                 # in the below line please pass the create table statement which you want #to create
-                cursor.execute("CREATE TABLE anime_data(Name varchar(255),Genders varchar(255),Score varchar(255),Episodes varchar(255),Producers varchar(512),Rating varchar(255),Duration varchar(255))")
+                cursor.execute("CREATE TABLE anime_data(Name varchar(255),Genre varchar(255),Rating Double(10,2) ,CrunchyRollUrl varchar(255),ImageUrl varchar(512),Episodes INT ,Duration varchar(255),Producers varchar(255), Studio varchar(255))")
                 print("Table is created....")
                 # loop through the data frame
                 for i, row in df.iterrows():
                     # here %S means string values
-                    sql = "INSERT INTO anime.anime_data VALUES (%s,%s,%s,%s,%s,%s,%s)"
-                    print(tuple(row))
-                    print(sql)
+                    sql = "INSERT INTO anime.anime_data VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                     cursor.execute(sql, tuple(row))
                     print("Record inserted")
                     # the connection is not auto committed by default, so we must commit to save our changes
@@ -62,6 +67,6 @@ class DataGather:
         except Error as e:
             print("Error while connecting to MySQL", e)
 dg = DataGather()
-dg.getImageUrls()
-#dg.sendToSQL()
+#dg.combine()
+dg.sendToSQL()
  
