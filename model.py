@@ -20,9 +20,8 @@ class model:
         names =  self.le.fit_transform(self.db["Names"])
 
         genres = self.le.fit_transform(self.db["Genre"])
-        duration =   self.le.fit_transform(self.db["Duration"])
         studios =   self.le.fit_transform(self.db["Studios"])
-        self.X = np.array(list(zip( names, genres,duration,studios,self.db["rate"],
+        self.X = np.array(list(zip( names, genres,studios,self.db["rate"],
                           self.db["Episodes"])))
         self.numCent = K
         
@@ -40,8 +39,9 @@ class model:
         kMeans = KMeans(n_clusters = self.numCent)
         kMeans = kMeans.fit(self.X)
         toPredict = self.le.fit_transform(toPredict)
-        predictions = kMeans.predict([toPredict])
-        return predictions
+        prediction = kMeans.predict([toPredict])
+        val = self.db[kMeans.labels_ == prediction][:5]
+        return val
 
     def eculid_dist(self, a, b, ax=1):
         return np.linalg.norm(a-b,axis = ax)
@@ -91,7 +91,3 @@ class model:
         Cy = np.random.randint(np.min(self.X[:,1]),np.max(self.X[:,1]), size = self.numCent)
         C = np.array(list(zip(Cx,Cy)), dtype =np.float64)
         return C
-
-clustering = model(5)
-predictions = clustering.predict(["action","",0,"","",""])
-print(predictions)
